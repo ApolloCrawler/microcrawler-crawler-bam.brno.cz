@@ -39,9 +39,23 @@ var exports = module.exports = function ($, item) {
         var text = doc.text();
         if (text.startsWith('GPS')) {
             gps = text.replace('GPS: ', '');
-        }
+            var parts = gps.split(/[°'\", ]+/);
 
-        console.log(doc.text());
+            var lat = parseInt(parts[0], 10) + (parseInt(parts[1], 10) / 60) + (parseInt(parts[2], 10) / 3600);
+            if (parts[3] == 'S') {
+                lat *= -1;
+            }
+
+            var lng = parseInt(parts[4], 10) + (parseInt(parts[5], 10) / 60) + (parseInt(parts[6], 10) / 3600);
+            if (parts[7] === 'W') {
+                lng *= -1;
+            }
+
+            gps = [
+                lng,
+                lat
+            ];
+        }
     });
 
     var architekti = [];
@@ -51,13 +65,17 @@ var exports = module.exports = function ($, item) {
     });
 
     var popis = $('div.rightPart > div.block > p').text().replace(/\s\s+/g, ' ').trim();
-    
+
     return [{
         type: 'data',
         data: {
+            url: item.url,
             jmeno: $('h1.smallIndent').first().text().replace(/\s\s+/g, ' ').trim(),
-            adresa: adresa,
-            gps: gps,
+            address: {
+                city: 'brno',
+                street: adresa,
+                location: gps
+            },
             stezka: stezka,
             typ: typ,
             architekti: architekti,
